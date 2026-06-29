@@ -1,0 +1,12 @@
+# Windows thumbnail cache files
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+
+# Folder config VS Code
+.vscode/
+
+# Local history / Temporary files
+*.log
+*.tmp
+.DS_Store

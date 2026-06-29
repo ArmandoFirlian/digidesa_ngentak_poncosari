@@ -3,7 +3,17 @@
 // ==================== SUPABASE CONFIGURATION ====================
 const supabaseUrl = 'https://ljyklyatixrbxhpnqngw.supabase.co';
 const supabaseKey = 'sb_publishable_wbDZ-1RrgvnwVVJyOTUcTw_smJCBQAc';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+let supabase = null;
+
+try {
+    if (window.supabase) {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    } else {
+        console.error("Supabase SDK tidak terdeteksi di window. Silakan periksa koneksi internet atau matikan AdBlocker.");
+    }
+} catch (e) {
+    console.error("Gagal menginisialisasi Supabase client:", e);
+}
 
 // ==================== STATE MANAGEMENT ====================
 let citizens = [];

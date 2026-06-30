@@ -669,8 +669,9 @@ function showToast(message, type) {
 }
 
 // ==================== INISIALISASI UTAMA ====================
-// Semua event listener dipasang di sini agar DOM sudah siap
-window.addEventListener("DOMContentLoaded", function() {
+// Script ini berada di bawah <body>, DOM sudah siap saat dieksekusi.
+// Tidak perlu DOMContentLoaded - langsung jalankan via appInit().
+function appInit() {
 
     // 1. Inisialisasi Supabase setelah DOM siap
     try {
@@ -732,4 +733,7 @@ window.addEventListener("DOMContentLoaded", function() {
     if (hash === "umkm") switchView("umkm-directory");
     else if (hash === "admin") switchView(currentUser ? "admin-dashboard" : "admin-login");
     else switchView("public-home");
-});
+}
+
+// Panggil langsung karena script ada di bawah <body>
+appInit();

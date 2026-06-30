@@ -34,8 +34,8 @@
                 <p style="color: var(--text-secondary); margin-top: 10px; max-width: 600px; margin-left: auto; margin-right: auto;">Kelola data warga dan UMKM secara cepat. Ini adalah versi halaman admin terpisah untuk memudahkan akses.</p>
             </div>
             <div class="dashboard-summary-cards" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-top:24px;">
-                <div class="stat-card"><div class="stat-val">12</div><div class="stat-lbl">Total Warga</div></div>
-                <div class="stat-card"><div class="stat-val">4</div><div class="stat-lbl">UMKM Terdaftar</div></div>
+                <div class="stat-card"><div class="stat-val" id="total-warga">12</div><div class="stat-lbl">Total Warga</div></div>
+                <div class="stat-card"><div class="stat-val" id="total-umkm">4</div><div class="stat-lbl">UMKM Terdaftar</div></div>
                 <div class="stat-card"><div class="stat-val">6</div><div class="stat-lbl">RT Aktif</div></div>
                 <div class="stat-card"><div class="stat-val">3</div><div class="stat-lbl">Pengumuman</div></div>
             </div>
@@ -43,15 +43,129 @@
                 <button class="btn-primary" onclick="goBack();"><i class="fa-solid fa-arrow-left"></i> Kembali ke Portal Admin</button>
                 <button class="btn-secondary" onclick="window.location.href='umkm.html';"><i class="fa-solid fa-store"></i> Lihat UMKM Desa</button>
             </div>
-            <div class="table-container" style="margin-top: 28px;">
+            <!-- Form untuk menambahkan administrasi warga -->
+            <div class="form-container" style="margin-top: 28px; display:grid; gap:18px;">
+                <div class="form-card" style="padding:16px; border-radius:8px; background:var(--surface); box-shadow: var(--shadow-soft);">
+                    <h3 style="margin:0 0 8px 0;">Tambah Data Warga</h3>
+                    <form id="citizen-form">
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                            <div style="flex:1; min-width:220px;">
+                                <label class="form-label">Nama</label>
+                                <input id="c-name" class="form-input" required>
+                            </div>
+                            <div style="width:220px;">
+                                <label class="form-label">NIK</label>
+                                <input id="c-nik" class="form-input" placeholder="3201012001010001" required>
+                            </div>
+                            <div style="width:120px;">
+                                <label class="form-label">RT</label>
+                                <input id="c-rt" class="form-input" placeholder="RT 01" required>
+                            </div>
+                            <div style="width:160px;">
+                                <label class="form-label">Gender</label>
+                                <select id="c-gender" class="form-input">
+                                    <option value="Laki-Laki">Laki-Laki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                            </div>
+                            <div style="flex:1; min-width:200px;">
+                                <label class="form-label">Pekerjaan</label>
+                                <input id="c-pekerjaan" class="form-input">
+                            </div>
+                            <div style="width:160px;">
+                                <label class="form-label">Foto</label>
+                                <input id="c-photo" type="file" accept="image/*" class="form-input">
+                            </div>
+                            <div style="width:72px;">
+                                <img id="photo-preview" src="" alt="Preview" style="display:none; width:64px; height:64px; object-fit:cover; border-radius:6px;">
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;">
+                            <button type="submit" class="btn-primary">Tambahkan Warga</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-container" style="margin-top: 12px;">
                 <table class="admin-table">
                     <thead>
-                        <tr><th>Nama</th><th>RT</th><th>Pekerjaan</th><th>Gender</th></tr>
+                        <tr><th>Foto</th><th>Nama</th><th>NIK</th><th>RT</th><th>Pekerjaan</th><th>Gender</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>Suhardi</td><td>RT 03</td><td>Petani</td><td>Laki-Laki</td></tr>
-                        <tr><td>Suprihati</td><td>RT 01</td><td>Pembuat Bakpia</td><td>Perempuan</td></tr>
-                        <tr><td>Sugeng Riyadi</td><td>RT 04</td><td>Pengrajin Bambu</td><td>Laki-Laki</td></tr>
+                        <tr><td>—</td><td>Suhardi</td><td>3201012001010001</td><td>RT 03</td><td>Petani</td><td>Laki-Laki</td></tr>
+                        <tr><td>—</td><td>Suprihati</td><td>3201012002020002</td><td>RT 01</td><td>Pembuat Bakpia</td><td>Perempuan</td></tr>
+                        <tr><td>—</td><td>Sugeng Riyadi</td><td>3201012003030003</td><td>RT 04</td><td>Pengrajin Bambu</td><td>Laki-Laki</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal detail warga -->
+            <div id="detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+                <div style="background:#fff; padding:18px; border-radius:8px; width:min(560px,95%); max-height:90%; overflow:auto; position:relative;">
+                    <button id="detail-close" style="position:absolute; right:10px; top:10px; background:none; border:none; font-size:18px;">✕</button>
+                    <div style="display:flex; gap:12px; align-items:flex-start;">
+                        <img id="detail-photo" src="" alt="Foto" style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #eee;">
+                        <div style="flex:1;">
+                            <h3 id="detail-name" style="margin:0 0 6px 0;"></h3>
+                            <p style="margin:0 0 4px 0;"><strong>NIK:</strong> <span id="detail-nik"></span></p>
+                            <p style="margin:0 0 4px 0;"><strong>RT:</strong> <span id="detail-rt"></span></p>
+                            <p style="margin:0 0 4px 0;"><strong>Pekerjaan:</strong> <span id="detail-pekerjaan"></span></p>
+                            <p style="margin:0 0 4px 0;"><strong>Gender:</strong> <span id="detail-gender"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form dan daftar UMKM -->
+            <div class="form-container" style="margin-top: 18px; display:grid; gap:18px;">
+                <div class="form-card" style="padding:16px; border-radius:8px; background:var(--surface); box-shadow: var(--shadow-soft);">
+                    <h3 style="margin:0 0 8px 0;">Tambah UMKM</h3>
+                    <form id="umkm-form">
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                            <div style="flex:1; min-width:200px;">
+                                <label class="form-label">Nama UMKM</label>
+                                <input id="u-name" class="form-input" required>
+                            </div>
+                            <div style="width:200px;">
+                                <label class="form-label">Pemilik</label>
+                                <input id="u-owner" class="form-input" required>
+                            </div>
+                            <div style="width:180px;">
+                                <label class="form-label">Jenis Usaha</label>
+                                <input id="u-jenis" class="form-input">
+                            </div>
+                            <div style="flex:1; min-width:220px;">
+                                <label class="form-label">Alamat</label>
+                                <input id="u-alamat" class="form-input">
+                            </div>
+                            <div style="width:160px;">
+                                <label class="form-label">Kontak</label>
+                                <input id="u-kontak" class="form-input" placeholder="0812xxxx...">
+                            </div>
+                            <div style="width:160px;">
+                                <label class="form-label">Foto/Logo</label>
+                                <input id="u-photo" type="file" accept="image/*" class="form-input">
+                            </div>
+                            <div style="width:72px;">
+                                <img id="u-photo-preview" src="" alt="Preview" style="display:none; width:64px; height:64px; object-fit:cover; border-radius:6px;">
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;">
+                            <button type="submit" class="btn-primary">Tambahkan UMKM</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-container" style="margin-top: 12px;">
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>Foto</th><th>Nama UMKM</th><th>Pemilik</th><th>Jenis</th><th>Kontak</th></tr>
+                    </thead>
+                    <tbody id="umkm-tbody">
+                        <tr><td>—</td><td>Bakpia Bu Supri</td><td>Suprihati</td><td>Makanan</td><td>081234567890</td></tr>
+                        <tr><td>—</td><td>Kerajinan Bambu Sugeng</td><td>Sugeng Riyadi</td><td>Kerajinan</td><td>081298765432</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -77,6 +191,139 @@
         function goBack() {
             window.location.href = 'portal-admin.html';
         }
+    </script>
+    <script>
+        // Photo preview when user selects a file
+        document.getElementById('c-photo').addEventListener('change', function (e) {
+            const file = e.target.files && e.target.files[0];
+            const preview = document.getElementById('photo-preview');
+            if (!file) { preview.style.display = 'none'; preview.src = ''; return; }
+            const reader = new FileReader();
+            reader.onload = function () {
+                preview.src = reader.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Handle adding a new citizen to the table
+        document.getElementById('citizen-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const name = document.getElementById('c-name').value.trim();
+            const nik = document.getElementById('c-nik').value.trim();
+            const rt = document.getElementById('c-rt').value.trim();
+            const pekerjaan = document.getElementById('c-pekerjaan').value.trim();
+            const gender = document.getElementById('c-gender').value;
+            const file = document.getElementById('c-photo').files[0];
+            const tbody = document.querySelector('.admin-table tbody');
+
+            function insertRow(imgSrc) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${imgSrc ? `<img src="${imgSrc}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;">` : '—'}</td>
+                    <td>${escapeHtml(name)}</td>
+                    <td>${escapeHtml(nik)}</td>
+                    <td>${escapeHtml(rt)}</td>
+                    <td>${escapeHtml(pekerjaan)}</td>
+                    <td>${escapeHtml(gender)}</td>`;
+                tbody.insertBefore(tr, tbody.firstChild);
+                // attach click handler to open detail modal
+                tr.addEventListener('click', function () {
+                    showDetailModal({ name, nik, rt, pekerjaan, gender, photo: imgSrc });
+                });
+                // Update total warga counter if present
+                const totalEl = document.getElementById('total-warga');
+                if (totalEl) totalEl.textContent = parseInt(totalEl.textContent || '0') + 1;
+                document.getElementById('citizen-form').reset();
+                document.getElementById('photo-preview').style.display = 'none';
+            }
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function () { insertRow(reader.result); };
+                reader.readAsDataURL(file);
+            } else {
+                insertRow('');
+            }
+        });
+
+        // Simple HTML escape
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Detail modal functions
+        function showDetailModal(data) {
+            document.getElementById('detail-name').textContent = data.name || '';
+            document.getElementById('detail-nik').textContent = data.nik || '';
+            document.getElementById('detail-rt').textContent = data.rt || '';
+            document.getElementById('detail-pekerjaan').textContent = data.pekerjaan || '';
+            document.getElementById('detail-gender').textContent = data.gender || '';
+            const img = document.getElementById('detail-photo');
+            if (data.photo) { img.src = data.photo; img.style.display = 'block'; } else { img.src = ''; img.style.display = 'none'; }
+            const modal = document.getElementById('detail-modal');
+            modal.style.display = 'flex';
+        }
+        document.getElementById('detail-close').addEventListener('click', function () {
+            document.getElementById('detail-modal').style.display = 'none';
+        });
+        // allow clicking outside content to close
+        document.getElementById('detail-modal').addEventListener('click', function (e) {
+            if (e.target === this) this.style.display = 'none';
+        });
+    </script>
+
+    <script>
+        // UMKM photo preview
+        document.getElementById('u-photo').addEventListener('change', function (e) {
+            const file = e.target.files && e.target.files[0];
+            const preview = document.getElementById('u-photo-preview');
+            if (!file) { preview.style.display = 'none'; preview.src = ''; return; }
+            const reader = new FileReader();
+            reader.onload = function () { preview.src = reader.result; preview.style.display = 'block'; };
+            reader.readAsDataURL(file);
+        });
+
+        // Handle adding UMKM to table
+        document.getElementById('umkm-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const name = document.getElementById('u-name').value.trim();
+            const owner = document.getElementById('u-owner').value.trim();
+            const jenis = document.getElementById('u-jenis').value.trim();
+            const alamat = document.getElementById('u-alamat').value.trim();
+            const kontak = document.getElementById('u-kontak').value.trim();
+            const file = document.getElementById('u-photo').files[0];
+            const tbody = document.getElementById('umkm-tbody');
+
+            function insertRow(imgSrc) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${imgSrc ? `<img src="${imgSrc}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;">` : '—'}</td>
+                    <td>${escapeHtml(name)}</td>
+                    <td>${escapeHtml(owner)}</td>
+                    <td>${escapeHtml(jenis)}</td>
+                    <td>${escapeHtml(kontak)}</td>`;
+                tbody.insertBefore(tr, tbody.firstChild);
+                // update total umkm
+                const totalEl = document.getElementById('total-umkm');
+                if (totalEl) totalEl.textContent = parseInt(totalEl.textContent || '0') + 1;
+                document.getElementById('umkm-form').reset();
+                document.getElementById('u-photo-preview').style.display = 'none';
+            }
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function () { insertRow(reader.result); };
+                reader.readAsDataURL(file);
+            } else {
+                insertRow('');
+            }
+        });
     </script>
 </body>
 </html>

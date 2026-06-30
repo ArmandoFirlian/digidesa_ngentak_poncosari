@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMKM Desa Ngentak</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo-wrapper">
+                <div class="logo-icon">N</div>
+                <div class="logo-text">
+                    <span class="logo-title">DigiDesa Ngentak</span>
+                    <span class="logo-subtitle">UMKM Desa</span>
+                </div>
+            </a>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Beranda</a></li>
+                    <li><a href="umkm.html" class="nav-link active"><i class="fa-solid fa-store"></i> UMKM Desa</a></li>
+                    <li><a href="portal-admin.html" class="btn-admin"><i class="fa-solid fa-user-shield"></i> Portal Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <section class="view-section active animate-fade-in">
+            <div class="stats-header">
+                <span class="section-tag">Katalog Usaha Lokal</span>
+                <h2 class="section-title">UMKM Desa Ngentak</h2>
+                <p style="color: var(--text-secondary); margin-top: 10px; max-width: 600px; margin-left: auto; margin-right: auto;">Telusuri usaha warga lokal Dusun Ngentak. Bongkar produk tradisional, kerajinan tangan, jasa, dan hasil pertanian unggulan yang siap dibeli atau dipesan.</p>
+            </div>
+            <div class="search-filter-bar">
+                <div class="search-input-wrapper">
+                    <input type="text" id="search-umkm" class="search-input" placeholder="Cari UMKM berdasarkan nama, pemilik, atau kategori..." />
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                </div>
+                <div class="filter-group" id="umkm-filter-group">
+                    <button class="filter-btn active" data-category="All">Semua</button>
+                    <button class="filter-btn" data-category="Kuliner">Kuliner</button>
+                    <button class="filter-btn" data-category="Kerajinan">Kerajinan</button>
+                    <button class="filter-btn" data-category="Pertanian">Pertanian</button>
+                    <button class="filter-btn" data-category="Jasa">Jasa</button>
+                </div>
+            </div>
+            <div class="umkm-grid" id="public-umkm-grid"></div>
+        </section>
+    </main>
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-info">
+                <h4 style="color: var(--primary-light);">DigiDesa Ngentak</h4>
+                <p>Portal UMKM Desa Ngentak untuk mempromosikan usaha lokal secara mudah dan cepat.</p>
+            </div>
+            <div class="footer-links">
+                <h5>Pintasan Menu</h5>
+                <ul class="footer-menu">
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="umkm.html">UMKM Desa</a></li>
+                    <li><a href="portal-admin.html">Portal Admin</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+    <script>
+        const umkms = [
+            { name: "Bakpia Ayu Ngentak", owner: "Ibu Suprihati", category: "Kuliner", whatsapp: "6287864303875", description: "Bakpia basah tradisional dengan resep warisan keluarga. Tersedia varian rasa kacang hijau, kumbu hitam, dan keju." },
+            { name: "Kipas Bambu Tradisional Ngentak", owner: "Pak Sugeng Riyadi", category: "Kerajinan", whatsapp: "6281234567890", description: "Kerajinan tangan anyaman bambu premium, kuat dan estetik. Cocok untuk souvenir pernikahan dan dekorasi rumah." },
+            { name: "Bawang Merah Organik Lestari", owner: "Pak Suhardi", category: "Pertanian", whatsapp: "6282345678901", description: "Bawang merah segar hasil panen langsung dari lahan Dusun Ngentak. Tanpa pestisida berlebih." },
+            { name: "Servis Motor Ngentak Jaya", owner: "Mas Joko Susilo", category: "Jasa", whatsapp: "6283456789012", description: "Servis motor berkala, ganti oli, kelistrikan, dan tambal ban untuk semua tipe motor." }
+        ];
+
+        function renderPublicUmkms() {
+            const grid = document.getElementById('public-umkm-grid');
+            const keyword = document.getElementById('search-umkm').value.toLowerCase();
+            const activeCategory = document.querySelector('#umkm-filter-group .filter-btn.active').getAttribute('data-category');
+
+            const filtered = umkms.filter(u => {
+                const matchesCategory = activeCategory === 'All' || u.category === activeCategory;
+                const matchesKeyword = u.name.toLowerCase().includes(keyword) || u.owner.toLowerCase().includes(keyword) || u.category.toLowerCase().includes(keyword);
+                return matchesCategory && matchesKeyword;
+            });
+
+            if (!grid) return;
+            grid.innerHTML = filtered.map(u => `
+                <article class="umkm-card">
+                    <div class="umkm-image-fallback">
+                        <div class="umkm-image-fallback-icon"><i class="fa-solid fa-shop"></i></div>
+                    </div>
+                    <div class="umkm-content">
+                        <span class="umkm-badge">${u.category}</span>
+                        <h3 class="umkm-title">${u.name}</h3>
+                        <p class="umkm-owner">${u.owner}</p>
+                        <p class="umkm-desc">${u.description}</p>
+                        <a class="btn-contact" href="https://wa.me/${u.whatsapp}" target="_blank" rel="noreferrer"><i class="fa-brands fa-whatsapp"></i> Hubungi WhatsApp</a>
+                    </div>
+                </article>
+            `).join('');
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-secondary); text-align:center; width:100%;">Tidak ada UMKM yang sesuai pencarian.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderPublicUmkms();
+            document.querySelectorAll('#umkm-filter-group .filter-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#umkm-filter-group .filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderPublicUmkms();
+                });
+            });
+            document.getElementById('search-umkm').addEventListener('input', renderPublicUmkms);
+        });
+    </script>
+</body>
+</html>

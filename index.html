@@ -19,7 +19,7 @@
     <!-- Header Navigation -->
     <header>
         <div class="container nav-container">
-            <a href="#" class="logo-wrapper" id="nav-logo">
+            <a href="index.html" class="logo-wrapper">
                 <div class="logo-icon">N</div>
                 <div class="logo-text">
                     <span class="logo-title">DigiDesa Ngentak</span>
@@ -29,15 +29,15 @@
             
             <nav>
                 <ul class="nav-menu">
-                    <li><a href="#" class="nav-link active" id="link-home" data-target="public-home"><i class="fa-solid fa-house"></i> Beranda</a></li>
-                    <li><a href="#" class="nav-link" id="link-umkm" data-target="umkm-directory"><i class="fa-solid fa-store"></i> UMKM Desa</a></li>
-                    <li><a href="#" class="btn-admin" id="link-admin" data-target="admin-login"><i class="fa-solid fa-user-shield"></i> Portal Admin</a></li>
+                    <li><a href="index.html" class="nav-link active"><i class="fa-solid fa-house"></i> Beranda</a></li>
+                    <li><a href="umkm.html" class="nav-link"><i class="fa-solid fa-store"></i> UMKM Desa</a></li>
+                    <li><a href="portal-admin.html" class="btn-admin"><i class="fa-solid fa-user-shield"></i> Portal Admin</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <!-- MAIN VIEW CONTAINER (SPA) -->
+    <!-- MAIN VIEW CONTAINER -->
     <main class="container">
         
         <!-- ==================== 1. VIEW: PUBLIC HOME / MONOGRAFI ==================== -->
@@ -48,8 +48,8 @@
                     <h1>Portal Administrasi & Monografi Dusun Ngentak</h1>
                     <p>Selamat datang di portal informasi resmi Dusun Ngentak, Kalurahan Poncosari, Srandakan, Bantul. Wadah digital transparansi data monografi kependudukan serta katalog promosi produk-produk unggulan UMKM lokal warga kami.</p>
                     <div class="hero-actions">
-                        <button class="btn-primary" onclick="switchView('umkm-directory')"><i class="fa-solid fa-store"></i> Jelajahi UMKM</button>
-                        <button class="btn-secondary" onclick="document.getElementById('statistics-section').scrollIntoView();"><i class="fa-solid fa-chart-pie"></i> Lihat Statistik</button>
+                        <a class="btn-primary" href="umkm.html"><i class="fa-solid fa-store"></i> Jelajahi UMKM</a>
+                        <a class="btn-secondary" href="portal-admin.html"><i class="fa-solid fa-user-shield"></i> Portal Admin</a>
                     </div>
                 </div>
                 <div class="hero-image-container">
@@ -189,233 +189,49 @@
                     <h2 class="section-title">Warta & Kegiatan Warga</h2>
                 </div>
                 
-                <div class="blog-grid" id="public-blog-grid">
-                    <!-- Populated dynamically via JS -->
+                <div class="blog-grid">
+                    <article class="blog-card">
+                        <div class="blog-media"><i class="fa-solid fa-people-roof"></i></div>
+                        <div class="blog-tag">Kegiatan</div>
+                        <div class="blog-body">
+                            <div class="blog-date">20 Juni 2026</div>
+                            <h3 class="blog-title">Gotong Royong Saluran Irigasi Menjelang Musim Tanam</h3>
+                            <p class="blog-summary">Warga RT 03 dan RT 04 membersihkan saluran irigasi untuk memastikan air pertanian mengalir lancar.</p>
+                        </div>
+                    </article>
+                    <article class="blog-card">
+                        <div class="blog-media"><i class="fa-solid fa-chalkboard-user"></i></div>
+                        <div class="blog-tag">Pemberdayaan</div>
+                        <div class="blog-body">
+                            <div class="blog-date">15 Mei 2026</div>
+                            <h3 class="blog-title">Pelatihan Digital Marketing dan Kemasan Kreatif UMKM</h3>
+                            <p class="blog-summary">Mahasiswa KKN mengajar pelaku usaha lokal cara memasarkan produk lewat WhatsApp Business.</p>
+                        </div>
+                    </article>
+                    <article class="blog-card">
+                        <div class="blog-media"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="blog-tag">Pengumuman</div>
+                        <div class="blog-body">
+                            <div class="blog-date">02 Juni 2026</div>
+                            <h3 class="blog-title">Rapat Persiapan Bersih Dusun & Merti Desa</h3>
+                            <p class="blog-summary">Pengurus RT dan tokoh masyarakat merencanakan rangkaian kegiatan tradisi tahunan yang khidmat.</p>
+                        </div>
+                    </article>
                 </div>
             </div>
+
+            <section class="view-section animate-fade-in">
+                <div class="stats-header">
+                    <span class="section-tag">Aksi Cepat</span>
+                    <h2 class="section-title">Langsung Akses Menu</h2>
+                    <p style="color: var(--text-secondary); margin-top: 10px; max-width: 620px; margin-left: auto; margin-right: auto;">Buka halaman UMKM Desa untuk melihat produk lokal, atau masuk ke Portal Admin untuk pengelolaan data.</p>
+                </div>
+                <div class="hero-actions" style="justify-content: center; gap: 16px; margin-top: 24px;">
+                    <a class="btn-primary" href="umkm.html"><i class="fa-solid fa-store"></i> Buka UMKM Desa</a>
+                    <a class="btn-secondary" href="portal-admin.html"><i class="fa-solid fa-user-shield"></i> Masuk Portal Admin</a>
+                </div>
+            </section>
         </section>
-
-        <!-- ==================== 2. VIEW: UMKM SHOWCASE ==================== -->
-        <section id="umkm-directory" class="view-section animate-fade-in">
-            <div class="stats-header">
-                <span class="section-tag">Katalog Usaha Lokal</span>
-                <h2 class="section-title">Showcase UMKM Dusun Ngentak</h2>
-                <p style="color: var(--text-secondary); margin-top: 10px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                    Dukung perekonomian warga lokal. Temukan dan beli langsung produk kerajinan tangan, kuliner lezat, dan hasil tani warga Dusun Ngentak.
-                </p>
-            </div>
-
-            <!-- Search and Filter Bar -->
-            <div class="search-filter-bar">
-                <div class="search-input-wrapper">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" class="search-input" id="search-umkm" placeholder="Cari nama usaha atau produk...">
-                </div>
-                <div class="filter-group" id="umkm-filter-group">
-                    <button class="filter-btn active" data-category="All">Semua</button>
-                    <button class="filter-btn" data-category="Kuliner">Kuliner</button>
-                    <button class="filter-btn" data-category="Kerajinan">Kerajinan</button>
-                    <button class="filter-btn" data-category="Jasa">Jasa</button>
-                    <button class="filter-btn" data-category="Pertanian">Pertanian</button>
-                </div>
-            </div>
-
-            <!-- UMKM Cards Grid -->
-            <div class="umkm-grid" id="public-umkm-grid">
-                <!-- Dynamic grid generated by JS -->
-            </div>
-        </section>
-
-        <!-- ==================== 3. VIEW: ADMIN LOGIN ==================== -->
-        <section id="admin-login" class="view-section animate-fade-in">
-            <div class="login-container">
-                <div class="login-header">
-                    <div class="logo-icon" style="margin: 0 auto 16px auto; width: 50px; height: 50px;">N</div>
-                    <h2>Portal Administrasi</h2>
-                    <p>Khusus Administrator & Pak Dukuh Ngentak</p>
-                </div>
-                
-                <div class="login-error" id="login-error-msg">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Username atau password salah!
-                </div>
-                
-                <form id="login-form" onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label class="form-label" for="username">Username</label>
-                        <input type="text" id="username" class="form-input" required placeholder="Masukkan username admin">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="password">Password</label>
-                        <input type="password" id="password" class="form-input" required placeholder="••••••••">
-                    </div>
-                    <button type="submit" class="btn-submit">Masuk Sistem <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
-                </form>
-            </div>
-        </section>
-
-        <!-- ==================== 4. VIEW: ADMIN DASHBOARD ==================== -->
-        <section id="admin-dashboard" class="view-section animate-fade-in">
-            <div class="admin-layout">
-                
-                <!-- Admin Sidebar Navigation -->
-                <aside class="admin-sidebar">
-                    <div style="padding: 12px 16px; margin-bottom: 8px;">
-                        <h4 style="color: var(--text-primary); font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-                            <span style="display:inline-block; width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;"></span>
-                            Sesi: Pak Dukuh
-                        </h4>
-                    </div>
-                    
-                    <button class="sidebar-btn active" id="tab-btn-overview" onclick="switchAdminTab('overview')">
-                        <i class="fa-solid fa-gauge"></i> Ringkasan
-                    </button>
-                    <button class="sidebar-btn" id="tab-btn-citizens" onclick="switchAdminTab('citizens')">
-                        <i class="fa-solid fa-id-card"></i> Data Warga (NIK)
-                    </button>
-                    <button class="sidebar-btn" id="tab-btn-umkm" onclick="switchAdminTab('umkm')">
-                        <i class="fa-solid fa-store"></i> Kelola UMKM
-                    </button>
-                    
-                    <div class="sidebar-divider"></div>
-                    
-                    <button class="sidebar-btn" style="color: var(--danger);" onclick="handleLogout()">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar Sesi
-                    </button>
-                </aside>
-                
-                <!-- Admin Main Contents -->
-                <div class="admin-main">
-                    
-                    <!-- TAB A: OVERVIEW -->
-                    <div id="admin-tab-overview" class="admin-tab-content active">
-                        <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 8px;">Dashboard Ringkasan</h2>
-                        <p style="color: var(--text-secondary); margin-bottom: 24px;">Kelola data administratif Dusun Ngentak secara cepat dan aman.</p>
-                        
-                        <div class="dashboard-summary-cards">
-                            <div class="stat-card" style="padding: 20px;">
-                                <div class="stat-val" style="font-size: 2.2rem;" id="admin-summary-pop">0</div>
-                                <div class="stat-lbl">Warga Terdaftar</div>
-                            </div>
-                            <div class="stat-card" style="padding: 20px;">
-                                <div class="stat-val" style="font-size: 2.2rem;" id="admin-summary-male">0</div>
-                                <div class="stat-lbl">Warga Laki-Laki</div>
-                            </div>
-                            <div class="stat-card" style="padding: 20px;">
-                                <div class="stat-val" style="font-size: 2.2rem;" id="admin-summary-female">0</div>
-                                <div class="stat-lbl">Warga Perempuan</div>
-                            </div>
-                            <div class="stat-card" style="padding: 20px;">
-                                <div class="stat-val" style="font-size: 2.2rem;" id="admin-summary-umkm">0</div>
-                                <div class="stat-lbl">Usaha UMKM</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Quick Actions Grid -->
-                        <div class="grid-2">
-                            <div class="chart-card">
-                                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;"><i class="fa-solid fa-bolt" style="color: var(--warning);"></i> Aksi Cepat</h3>
-                                <div style="display: flex; flex-direction: column; gap: 12px;">
-                                    <button class="btn-primary" style="justify-content: center;" onclick="openCitizenModal(false)"><i class="fa-solid fa-user-plus"></i> Tambah Data Warga Baru</button>
-                                    <button class="btn-secondary" style="justify-content: center; width: 100%;" onclick="openUmkmModal(false)"><i class="fa-solid fa-circle-plus"></i> Tambah Usaha UMKM</button>
-                                </div>
-                            </div>
-                            
-                            <div class="chart-card">
-                                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;"><i class="fa-solid fa-download" style="color: var(--info);"></i> Ekspor & Cadangkan</h3>
-                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 16px;">Unduh database offline untuk arsip desa dalam format CSV kependudukan.</p>
-                                <div style="display: flex; gap: 12px;">
-                                    <button class="btn-secondary" style="font-size: 0.85rem; flex-grow:1; justify-content:center;" onclick="exportToCSV()"><i class="fa-solid fa-file-csv"></i> Ekspor CSV</button>
-                                    <button class="btn-secondary" style="font-size: 0.85rem; flex-grow:1; justify-content:center;" onclick="exportToJSON()"><i class="fa-solid fa-file-code"></i> Ekspor JSON</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- TAB B: CITIZENS DATABASE (CRUD) -->
-                    <div id="admin-tab-citizens" class="admin-tab-content">
-                        <div class="action-bar">
-                            <div>
-                                <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 4px;">Basis Data Kependudukan</h2>
-                                <p style="color: var(--text-secondary); font-size: 0.9rem;">Menampilkan nomor NIK privasi dan biodata lengkap seluruh warga Dusun Ngentak.</p>
-                            </div>
-                            <button class="btn-primary" onclick="openCitizenModal(false)"><i class="fa-solid fa-user-plus"></i> Tambah Warga</button>
-                        </div>
-                        
-                        <!-- Search and filter table -->
-                        <div class="search-filter-bar" style="padding: 16px; margin-bottom: 20px;">
-                            <div class="search-input-wrapper" style="max-width: 320px;">
-                                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                                <input type="text" class="search-input" id="search-citizen-admin" placeholder="Cari NIK, Nama, Pekerjaan...">
-                            </div>
-                            <div style="display:flex; gap:10px;">
-                                <select class="form-input" id="filter-rt-admin" style="padding: 8px 12px; width: 120px;" onchange="renderCitizenTable()">
-                                    <option value="All">Semua RT</option>
-                                    <option value="RT 01">RT 01</option>
-                                    <option value="RT 02">RT 02</option>
-                                    <option value="RT 03">RT 03</option>
-                                    <option value="RT 04">RT 04</option>
-                                    <option value="RT 05">RT 05</option>
-                                    <option value="RT 06">RT 06</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Responsive Citizens Table -->
-                        <div class="table-container">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>NIK (Privasi)</th>
-                                        <th>Nama Lengkap</th>
-                                        <th>JK</th>
-                                        <th>Umur</th>
-                                        <th>Alamat / Wilayah</th>
-                                        <th>Pekerjaan Utama</th>
-                                        <th>Foto Rumah</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="citizen-table-body">
-                                    <!-- Rendered dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <!-- TAB C: UMKM MANAGEMENT (CRUD) -->
-                    <div id="admin-tab-umkm" class="admin-tab-content">
-                        <div class="action-bar">
-                            <div>
-                                <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 4px;">Kelola UMKM Dusun Ngentak</h2>
-                                <p style="color: var(--text-secondary); font-size: 0.9rem;">Tambah, ubah promosi, atau hapus daftar usaha mikro milik warga dusun.</p>
-                            </div>
-                            <button class="btn-primary" onclick="openUmkmModal(false)"><i class="fa-solid fa-plus"></i> Tambah UMKM</button>
-                        </div>
-                        
-                        <!-- Table list of UMKMs -->
-                        <div class="table-container">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>Nama Usaha</th>
-                                        <th>Pemilik</th>
-                                        <th>Kategori</th>
-                                        <th>Nomor WhatsApp</th>
-                                        <th>Deskripsi Singkat</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="umkm-table-body">
-                                    <!-- Rendered dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
-        </section>
-        
     </main>
 
     <!-- ==================== FOOTER ==================== -->
@@ -429,9 +245,9 @@
             <div class="footer-links">
                 <h5>Pintasan Menu</h5>
                 <ul class="footer-menu">
-                    <li><a href="#" onclick="switchView('public-home')">Beranda / Profil</a></li>
-                    <li><a href="#" onclick="switchView('umkm-directory')">Direktori UMKM</a></li>
-                    <li><a href="#" onclick="switchView('admin-login')">Portal Log In Admin</a></li>
+                    <li><a href="index.html">Beranda / Profil</a></li>
+                    <li><a href="umkm.html">Direktori UMKM</a></li>
+                    <li><a href="portal-admin.html">Portal Log In Admin</a></li>
                 </ul>
             </div>
             <div class="footer-links">
@@ -449,127 +265,5 @@
     </footer>
 
     <!-- ==================== MODAL: ADD / EDIT CITIZEN ==================== -->
-    <div class="modal-overlay" id="citizen-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="citizen-modal-title">Tambah Data Warga</h3>
-                <button class="modal-close" onclick="closeCitizenModal()">&times;</button>
-            </div>
-            <form id="citizen-form" onsubmit="saveCitizen(event)">
-                <!-- Hidden inputs for edit tracking -->
-                <input type="hidden" id="edit-citizen-id">
-                
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label" for="citizen-nik">Nomor Induk Kependudukan (NIK - 16 Digit)</label>
-                        <input type="text" id="citizen-nik" class="form-input" required maxlength="16" minlength="16" placeholder="3402xxxxxxxxxxxx">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="citizen-name">Nama Lengkap</label>
-                        <input type="text" id="citizen-name" class="form-input" required placeholder="Masukkan nama lengkap warga">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="citizen-gender">Jenis Kelamin</label>
-                            <select id="citizen-gender" class="form-input" required>
-                                <option value="">Pilih Gender</option>
-                                <option value="Laki-Laki">Laki-Laki</option>
-                                <option value="Perempuan">Perempuan</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="citizen-age">Usia (Tahun)</label>
-                            <input type="number" id="citizen-age" class="form-input" required min="0" max="120" placeholder="Contoh: 32">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="citizen-rt">Wilayah Rukun Tetangga (RT)</label>
-                            <select id="citizen-rt" class="form-input" required>
-                                <option value="">Pilih RT</option>
-                                <option value="RT 01">RT 01</option>
-                                <option value="RT 02">RT 02</option>
-                                <option value="RT 03">RT 03</option>
-                                <option value="RT 04">RT 04</option>
-                                <option value="RT 05">RT 05</option>
-                                <option value="RT 06">RT 06</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="citizen-job">Pekerjaan Utama</label>
-                            <input type="text" id="citizen-job" class="form-input" required placeholder="Contoh: Petani, Buruh, Guru">
-                        </div>
-                    </div>
-                    <div class="form-group" style="margin-top: 16px;">
-                        <label class="form-label" for="citizen-photo">Foto Rumah Warga</label>
-                        <input type="file" id="citizen-photo" class="form-input" accept="image/*">
-                        <small style="color: var(--text-muted); font-size: 0.75rem;">Format JPG/PNG/WebP. Kosongkan jika tidak ingin merubah/menambahkan.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="closeCitizenModal()">Batal</button>
-                    <button type="submit" class="btn-primary" id="citizen-btn-submit">Simpan Warga</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ==================== MODAL: ADD / EDIT UMKM ==================== -->
-    <div class="modal-overlay" id="umkm-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="umkm-modal-title">Tambah Usaha UMKM</h3>
-                <button class="modal-close" onclick="closeUmkmModal()">&times;</button>
-            </div>
-            <form id="umkm-form" onsubmit="saveUmkm(event)">
-                <!-- Hidden inputs for edit tracking -->
-                <input type="hidden" id="edit-umkm-id">
-                
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label" for="umkm-name">Nama Usaha / Brand</label>
-                        <input type="text" id="umkm-name" class="form-input" required placeholder="Contoh: Bakpia Ayu Ngentak">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="umkm-owner">Nama Pemilik Usaha</label>
-                            <input type="text" id="umkm-owner" class="form-input" required placeholder="Nama pemilik/pengelola">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="umkm-category">Kategori Bidang</label>
-                            <select id="umkm-category" class="form-input" required>
-                                <option value="">Pilih Kategori</option>
-                                <option value="Kuliner">Kuliner (Makanan & Minuman)</option>
-                                <option value="Kerajinan">Kerajinan (Handicraft)</option>
-                                <option value="Jasa">Jasa</option>
-                                <option value="Pertanian">Pertanian & Peternakan</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="umkm-whatsapp">Nomor WhatsApp Pengelola (Format Internasional)</label>
-                        <input type="text" id="umkm-whatsapp" class="form-input" required placeholder="Contoh: 6287864303875">
-                        <small style="color: var(--text-muted); font-size: 0.75rem;">Masukkan angka saja diawali kode negara 62. Contoh: 62878xxxxxxxx</small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="umkm-description">Deskripsi Singkat Usaha & Produk</label>
-                        <textarea id="umkm-description" class="form-input" style="height: 100px; resize: none;" required placeholder="Jelaskan produk unggulan yang dijual, lokasi, jam buka, dsb."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="closeUmkmModal()">Batal</button>
-                    <button type="submit" class="btn-primary" id="umkm-btn-submit">Simpan Promosi</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ==================== TOAST NOTIFICATION CONTAINER ==================== -->
-    <div class="toast-container" id="toast-wrapper"></div>
-
-    <!-- SUPABASE JS SDK (Explicit UMD Bundle) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <!-- MAIN APP LOGIC -->
-    <script src="app.js"></script>
 </body>
 </html>

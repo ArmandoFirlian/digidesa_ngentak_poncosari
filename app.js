@@ -84,6 +84,8 @@ function switchView(viewId) {
     window.scrollTo(0, 0);
 }
 
+window.switchView = switchView;
+
 // ==================== DATABASE (SUPABASE) ====================
 async function initDatabase() {
     // Tampilkan loading state
@@ -735,5 +737,12 @@ function appInit() {
     else switchView("public-home");
 }
 
-// Panggil langsung karena script ada di bawah <body>
-appInit();
+// Expose main init function so inline navigation can still call it if needed.
+window.appInit = appInit;
+
+// Panggil appInit — jika DOM sudah siap jalankan langsung, jika belum pasang listener
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', appInit);
+} else {
+    appInit();
+}

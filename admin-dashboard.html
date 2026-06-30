@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin DigiDesa Ngentak</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo-wrapper">
+                <div class="logo-icon">N</div>
+                <div class="logo-text">
+                    <span class="logo-title">DigiDesa Ngentak</span>
+                    <span class="logo-subtitle">Admin Dashboard</span>
+                </div>
+            </a>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Beranda</a></li>
+                    <li><a href="umkm.html" class="nav-link"><i class="fa-solid fa-store"></i> UMKM Desa</a></li>
+                    <li><a href="portal-admin.html" class="btn-admin"><i class="fa-solid fa-user-shield"></i> Portal Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <section class="view-section active animate-fade-in">
+            <div class="stats-header">
+                <span class="section-tag">Panel Admin</span>
+                <h2 class="section-title">Dashboard Admin Dusun Ngentak</h2>
+                <p style="color: var(--text-secondary); margin-top: 10px; max-width: 600px; margin-left: auto; margin-right: auto;">Kelola data warga dan UMKM secara cepat. Ini adalah versi halaman admin terpisah untuk memudahkan akses.</p>
+            </div>
+            <div class="dashboard-summary-cards" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-top:24px;">
+                <div class="stat-card"><div class="stat-val">12</div><div class="stat-lbl">Total Warga</div></div>
+                <div class="stat-card"><div class="stat-val">4</div><div class="stat-lbl">UMKM Terdaftar</div></div>
+                <div class="stat-card"><div class="stat-val">6</div><div class="stat-lbl">RT Aktif</div></div>
+                <div class="stat-card"><div class="stat-val">3</div><div class="stat-lbl">Pengumuman</div></div>
+            </div>
+            <div class="action-bar" style="margin-top: 32px; justify-content:flex-start; gap:12px;">
+                <button class="btn-primary" onclick="goBack();"><i class="fa-solid fa-arrow-left"></i> Kembali ke Portal Admin</button>
+                <button class="btn-secondary" onclick="window.location.href='umkm.html';"><i class="fa-solid fa-store"></i> Lihat UMKM Desa</button>
+            </div>
+            <div class="table-container" style="margin-top: 28px;">
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>Nama</th><th>RT</th><th>Pekerjaan</th><th>Gender</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Suhardi</td><td>RT 03</td><td>Petani</td><td>Laki-Laki</td></tr>
+                        <tr><td>Suprihati</td><td>RT 01</td><td>Pembuat Bakpia</td><td>Perempuan</td></tr>
+                        <tr><td>Sugeng Riyadi</td><td>RT 04</td><td>Pengrajin Bambu</td><td>Laki-Laki</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-info">
+                <h4 style="color: var(--primary-light);">DigiDesa Ngentak</h4>
+                <p>Dashboard admin terpisah untuk memudahkan akses data desa tanpa bergantung pada SPA.</p>
+            </div>
+            <div class="footer-links">
+                <h5>Pintasan Menu</h5>
+                <ul class="footer-menu">
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="umkm.html">UMKM Desa</a></li>
+                    <li><a href="portal-admin.html">Portal Admin</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+    <script>
+        function goBack() {
+            window.location.href = 'portal-admin.html';
+        }
+    </script>
+</body>
+</html>

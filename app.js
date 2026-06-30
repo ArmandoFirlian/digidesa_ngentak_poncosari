@@ -1,27 +1,22 @@
-// DigiDesa Ngentak - Core JavaScript Logic with Supabase Integration
+// ============================================================
+// DigiDesa Ngentak - App Logic (Supabase Integration)
+// Semua event listener dipasang di dalam DOMContentLoaded
+// agar tidak crash saat library Supabase belum siap
+// ============================================================
 
-// ==================== SUPABASE CONFIGURATION ====================
-const supabaseUrl = 'https://ljyklyatixrbxhpnqngw.supabase.co';
-const supabaseKey = 'sb_publishable_wbDZ-1RrgvnwVVJyOTUcTw_smJCBQAc';
+// ==================== STATE ====================
 let supabase = null;
-
-try {
-    if (window.supabase) {
-        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    } else {
-        console.error("Supabase SDK tidak terdeteksi di window. Silakan periksa koneksi internet atau matikan AdBlocker.");
-    }
-} catch (e) {
-    console.error("Gagal menginisialisasi Supabase client:", e);
-}
-
-// ==================== STATE MANAGEMENT ====================
 let citizens = [];
 let umkms = [];
-let blogs = [];
 let currentUser = null;
+let selectedCategory = "All";
+let searchKeyword = "";
+let citizenAdminSearch = "";
 
-// Realistic Seeding Data
+const SUPABASE_URL = 'https://ljyklyatixrbxhpnqngw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_wbDZ-1RrgvnwVVJyOTUcTw_smJCBQAc';
+
+// ==================== SEED DATA ====================
 const defaultCitizens = [
     { nik: "3402142205880001", name: "Suhardi", gender: "Laki-Laki", age: 38, rt: "RT 03", job: "Petani Bawang", house_photo_url: null },
     { nik: "3402146508900003", name: "Suprihati", gender: "Perempuan", age: 36, rt: "RT 01", job: "Pembuat Bakpia", house_photo_url: null },
@@ -38,150 +33,46 @@ const defaultCitizens = [
 ];
 
 const defaultUmkms = [
-    { 
-        name: "Bakpia Ayu Ngentak", 
-        owner: "Ibu Suprihati", 
-        category: "Kuliner", 
-        whatsapp: "6287864303875", 
-        description: "Bakpia basah tradisional dengan resep warisan keluarga. Tersedia varian rasa Kacang Hijau, Kumbu Hitam, dan Keju. Menerima pesanan hajatan." 
-    },
-    { 
-        name: "Kipas Bambu Tradisional Ngentak", 
-        owner: "Pak Sugeng Riyadi", 
-        category: "Kerajinan", 
-        whatsapp: "6281234567890", 
-        description: "Kerajinan tangan anyaman bambu premium, kuat dan estetik. Sangat cocok untuk souvenir pernikahan, dekorasi ruangan, maupun pemakaian sehari-hari." 
-    },
-    { 
-        name: "Bawang Merah Organik Lestari", 
-        owner: "Pak Suhardi", 
-        category: "Pertanian", 
-        whatsapp: "6282345678901", 
-        description: "Menjual bawang merah segar hasil panen langsung dari lahan pasir Dusun Ngentak. Tanpa pestisida kimia berlebih, kualitas super dan tahan lama." 
-    },
-    { 
-        name: "Servis Motor Ngentak Jaya", 
-        owner: "Mas Joko Susilo", 
-        category: "Jasa", 
-        whatsapp: "6283456789012", 
-        description: "Melayani servis motor berkala, ganti oli, kelistrikan, dan tambal ban untuk segala tipe motor. Pengerjaan cepat, jujur, dan harga bersahabat." 
-    }
+    { name: "Bakpia Ayu Ngentak", owner: "Ibu Suprihati", category: "Kuliner", whatsapp: "6287864303875", description: "Bakpia basah tradisional dengan resep warisan keluarga. Tersedia varian rasa Kacang Hijau, Kumbu Hitam, dan Keju. Menerima pesanan hajatan." },
+    { name: "Kipas Bambu Tradisional Ngentak", owner: "Pak Sugeng Riyadi", category: "Kerajinan", whatsapp: "6281234567890", description: "Kerajinan tangan anyaman bambu premium, kuat dan estetik. Sangat cocok untuk souvenir pernikahan, dekorasi ruangan, maupun pemakaian sehari-hari." },
+    { name: "Bawang Merah Organik Lestari", owner: "Pak Suhardi", category: "Pertanian", whatsapp: "6282345678901", description: "Menjual bawang merah segar hasil panen langsung dari lahan pasir Dusun Ngentak. Tanpa pestisida kimia berlebih, kualitas super dan tahan lama." },
+    { name: "Servis Motor Ngentak Jaya", owner: "Mas Joko Susilo", category: "Jasa", whatsapp: "6283456789012", description: "Melayani servis motor berkala, ganti oli, kelistrikan, dan tambal ban untuk segala tipe motor. Pengerjaan cepat, jujur, dan harga bersahabat." }
 ];
 
 const defaultBlogs = [
-    {
-        id: "1",
-        title: "Gotong Royong Saluran Irigasi Menjelang Musim Tanam",
-        category: "Kegiatan",
-        date: "20 Juni 2026",
-        summary: "Warga Dusun Ngentak RT 03 dan RT 04 melaksanakan kerja bakti pembersihan lumpur dan sampah di sepanjang saluran irigasi utama untuk menjamin kelancaran aliran air ke lahan pertanian bawang merah."
-    },
-    {
-        id: "2",
-        title: "Pelatihan Digital Marketing dan Kemasan Kreatif UMKM Dusun",
-        category: "Pemberdayaan",
-        date: "15 Mei 2026",
-        summary: "Untuk mendongkrak penjualan produk desa, mahasiswa KKN bersama kelurahan mengadakan pelatihan desain kemasan serta cara promosi via WhatsApp Business untuk para pelaku UMKM lokal Dusun Ngentak."
-    },
-    {
-        id: "3",
-        title: "Rapat Persiapan Agenda Bersih Dusun & Merti Desa Poncosari",
-        category: "Pengumuman",
-        date: "02 Juni 2026",
-        summary: "Bertempat di rumah Bapak Dukuh Ngentak, seluruh pengurus RT dan tokoh masyarakat berkumpul merumuskan rangkaian acara tradisi bersih dusun tahunan agar berlangsung meriah namun tetap khidmat."
-    }
+    { id: "1", title: "Gotong Royong Saluran Irigasi Menjelang Musim Tanam", category: "Kegiatan", date: "20 Juni 2026", summary: "Warga Dusun Ngentak RT 03 dan RT 04 melaksanakan kerja bakti pembersihan lumpur dan sampah di sepanjang saluran irigasi utama untuk menjamin kelancaran aliran air ke lahan pertanian bawang merah." },
+    { id: "2", title: "Pelatihan Digital Marketing dan Kemasan Kreatif UMKM Dusun", category: "Pemberdayaan", date: "15 Mei 2026", summary: "Untuk mendongkrak penjualan produk desa, mahasiswa KKN bersama kelurahan mengadakan pelatihan desain kemasan serta cara promosi via WhatsApp Business untuk para pelaku UMKM lokal Dusun Ngentak." },
+    { id: "3", title: "Rapat Persiapan Agenda Bersih Dusun & Merti Desa Poncosari", category: "Pengumuman", date: "02 Juni 2026", summary: "Bertempat di rumah Bapak Dukuh Ngentak, seluruh pengurus RT dan tokoh masyarakat berkumpul merumuskan rangkaian acara tradisi bersih dusun tahunan agar berlangsung meriah namun tetap khidmat." }
 ];
 
-// Load and initialize database
-async function initDatabase() {
-    try {
-        // Fetch citizens from Supabase
-        let { data: dbCitizens, error: errCitizens } = await supabase
-            .from('citizens')
-            .select('*')
-            .order('created_at', { ascending: true });
-        
-        // Fetch UMKMs from Supabase
-        let { data: dbUmkms, error: errUmkms } = await supabase
-            .from('umkms')
-            .select('*')
-            .order('created_at', { ascending: true });
-
-        // If tables are empty or failed to seed, handle auto-seeding
-        if ((!dbCitizens || dbCitizens.length === 0) && (!dbUmkms || dbUmkms.length === 0)) {
-            showToast("Basis data Supabase kosong. Melakukan seeding data awal...", "info");
-            await seedDatabase();
-            
-            // Re-fetch
-            const { data: c } = await supabase.from('citizens').select('*').order('created_at', { ascending: true });
-            const { data: u } = await supabase.from('umkms').select('*').order('created_at', { ascending: true });
-            citizens = c || [];
-            umkms = u || [];
-        } else {
-            citizens = dbCitizens || [];
-            umkms = dbUmkms || [];
-        }
-
-        // Keep blogs static/local
-        blogs = [...defaultBlogs];
-
-        // Refresh dynamic UI displays
-        calculateStatistics();
-        renderPublicBlogs();
-        updateAdminOverview();
-        renderPublicUmkms();
-    } catch (error) {
-        console.error("Gagal memuat database Supabase:", error);
-        showToast("Gagal terhubung ke database. Silakan jalankan script SQL setup di Supabase.", "danger");
-    }
-
-    // Check session login
-    const sessionAuth = sessionStorage.getItem("desanegentak_auth_token");
-    if (sessionAuth === "logged_in") {
-        currentUser = "admin";
-    }
-}
-
-// Auto seed data function
-async function seedDatabase() {
-    try {
-        const { error: cErr } = await supabase.from('citizens').insert(defaultCitizens);
-        if (cErr) console.warn("Seeding warga gagal/mungkin tabel belum ada:", cErr);
-
-        const { error: uErr } = await supabase.from('umkms').insert(defaultUmkms);
-        if (uErr) console.warn("Seeding UMKM gagal/mungkin tabel belum ada:", uErr);
-    } catch (err) {
-        console.error("Terjadi error saat seeding:", err);
-    }
-}
-
-
-// ==================== ROUTING SYSTEM (SPA) ====================
+// ==================== ROUTING (SPA) ====================
 function switchView(viewId) {
-    const views = document.querySelectorAll(".view-section");
-    views.forEach(view => view.classList.remove("active"));
+    // Tutup semua view
+    document.querySelectorAll(".view-section").forEach(v => v.classList.remove("active"));
+    document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
 
-    const navLinks = document.querySelectorAll(".nav-link");
-    navLinks.forEach(link => link.classList.remove("active"));
-
+    // Redirect ke login jika belum login
     if (viewId === "admin-dashboard" && !currentUser) {
         viewId = "admin-login";
     }
 
-    const targetView = document.getElementById(viewId);
-    if (targetView) {
-        targetView.classList.add("active");
-    }
+    // Tampilkan view target
+    const target = document.getElementById(viewId);
+    if (target) target.classList.add("active");
 
+    // Aktifkan nav link yang sesuai
     if (viewId === "public-home") {
-        document.getElementById("link-home").classList.add("active");
+        const lnk = document.getElementById("link-home");
+        if (lnk) lnk.classList.add("active");
         calculateStatistics();
         renderPublicBlogs();
     } else if (viewId === "umkm-directory") {
-        document.getElementById("link-umkm").classList.add("active");
+        const lnk = document.getElementById("link-umkm");
+        if (lnk) lnk.classList.add("active");
         renderPublicUmkms();
     } else if (viewId === "admin-login" || viewId === "admin-dashboard") {
-        document.getElementById("link-admin").classList.add("active");
+        const lnk = document.getElementById("link-admin");
+        if (lnk) lnk.classList.add("active");
     }
 
     if (viewId === "admin-dashboard") {
@@ -193,80 +84,112 @@ function switchView(viewId) {
     window.scrollTo(0, 0);
 }
 
-// Hook links
-document.querySelectorAll(".nav-link, .btn-admin").forEach(element => {
-    element.addEventListener("click", (e) => {
-        e.preventDefault();
-        const target = element.getAttribute("data-target");
-        switchView(target);
-    });
-});
+// ==================== DATABASE (SUPABASE) ====================
+async function initDatabase() {
+    // Tampilkan loading state
+    const stats = ['stat-total-pop','stat-total-male','stat-total-female','stat-total-umkm'];
+    stats.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '...'; });
 
-document.getElementById("nav-logo").addEventListener("click", (e) => {
-    e.preventDefault();
-    switchView("public-home");
-});
-
-
-// ==================== PUBLIC PAGE: STATISTICS ====================
-function calculateStatistics() {
-    const totalPop = citizens.length;
-    const maleCount = citizens.filter(c => c.gender === "Laki-Laki").length;
-    const femaleCount = citizens.filter(c => c.gender === "Perempuan").length;
-    const activeUmkms = umkms.length;
-
-    document.getElementById("stat-total-pop").textContent = totalPop;
-    document.getElementById("stat-total-male").textContent = maleCount;
-    document.getElementById("stat-total-female").textContent = femaleCount;
-    document.getElementById("stat-total-umkm").textContent = activeUmkms;
-
-    const malePct = totalPop > 0 ? Math.round((maleCount / totalPop) * 100) : 0;
-    const femalePct = totalPop > 0 ? Math.round((femaleCount / totalPop) * 100) : 0;
-
-    const barMale = document.getElementById("chart-bar-male");
-    const barFemale = document.getElementById("chart-bar-female");
-    if (barMale && barFemale) {
-        barMale.style.height = `${malePct}%`;
-        barFemale.style.height = `${femalePct}%`;
-        document.getElementById("chart-lbl-male").textContent = `${malePct}% (${maleCount})`;
-        document.getElementById("chart-lbl-female").textContent = `${femalePct}% (${femaleCount})`;
+    if (!supabase) {
+        // Supabase tidak tersedia, gunakan data lokal saja
+        citizens = [...defaultCitizens.map((c,i) => ({...c, id: String(i+1)}))];
+        umkms = [...defaultUmkms.map((u,i) => ({...u, id: String(i+1)}))];
+        calculateStatistics();
+        renderPublicBlogs();
+        renderPublicUmkms();
+        showToast("Mode offline: Supabase tidak terhubung.", "danger");
+        return;
     }
 
-    let childCount = 0;
-    let prodCount = 0;
-    let elderCount = 0;
+    try {
+        const { data: dbCitizens } = await supabase.from('citizens').select('*').order('created_at', { ascending: true });
+        const { data: dbUmkms } = await supabase.from('umkms').select('*').order('created_at', { ascending: true });
 
-    citizens.forEach(c => {
-        if (c.age <= 14) childCount++;
-        else if (c.age <= 64) prodCount++;
-        else elderCount++;
-    });
+        if ((!dbCitizens || dbCitizens.length === 0) && (!dbUmkms || dbUmkms.length === 0)) {
+            showToast("Database kosong. Memasukkan data awal...", "success");
+            await seedDatabase();
+            const { data: c } = await supabase.from('citizens').select('*').order('created_at', { ascending: true });
+            const { data: u } = await supabase.from('umkms').select('*').order('created_at', { ascending: true });
+            citizens = c || [];
+            umkms = u || [];
+        } else {
+            citizens = dbCitizens || [];
+            umkms = dbUmkms || [];
+        }
+    } catch (err) {
+        console.error("Error koneksi Supabase:", err);
+        showToast("Gagal terhubung ke database Supabase.", "danger");
+        // Fallback ke data default
+        citizens = [...defaultCitizens.map((c,i) => ({...c, id: String(i+1)}))];
+        umkms = [...defaultUmkms.map((u,i) => ({...u, id: String(i+1)}))];
+    }
 
-    const childPct = totalPop > 0 ? Math.round((childCount / totalPop) * 100) : 0;
-    const prodPct = totalPop > 0 ? Math.round((prodCount / totalPop) * 100) : 0;
-    const elderPct = totalPop > 0 ? Math.round((elderCount / totalPop) * 100) : 0;
-
-    document.getElementById("age-val-child").textContent = `${childPct}% (${childCount} jiwa)`;
-    document.getElementById("age-bar-child").style.width = `${childPct}%`;
-
-    document.getElementById("age-val-productive").textContent = `${prodPct}% (${prodCount} jiwa)`;
-    document.getElementById("age-bar-productive").style.width = `${prodPct}%`;
-
-    document.getElementById("age-val-elderly").textContent = `${elderPct}% (${elderCount} jiwa)`;
-    document.getElementById("age-bar-elderly").style.width = `${elderPct}%`;
+    calculateStatistics();
+    renderPublicBlogs();
+    renderPublicUmkms();
 }
 
+async function seedDatabase() {
+    if (!supabase) return;
+    try {
+        await supabase.from('citizens').insert(defaultCitizens);
+        await supabase.from('umkms').insert(defaultUmkms);
+    } catch(e) {
+        console.warn("Seeding gagal (mungkin tabel belum dibuat):", e.message);
+    }
+}
 
-// ==================== PUBLIC PAGE: BLOGS & NEWS ====================
+// ==================== STATISTIK PUBLIK ====================
+function calculateStatistics() {
+    const total = citizens.length;
+    const male = citizens.filter(c => c.gender === "Laki-Laki").length;
+    const female = total - male;
+    const numUmkm = umkms.length;
+
+    const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    set("stat-total-pop", total);
+    set("stat-total-male", male);
+    set("stat-total-female", female);
+    set("stat-total-umkm", numUmkm);
+
+    const malePct = total > 0 ? Math.round((male / total) * 100) : 0;
+    const femalePct = 100 - malePct;
+
+    const barM = document.getElementById("chart-bar-male");
+    const barF = document.getElementById("chart-bar-female");
+    const lblM = document.getElementById("chart-lbl-male");
+    const lblF = document.getElementById("chart-lbl-female");
+    if (barM) barM.style.height = malePct + "%";
+    if (barF) barF.style.height = femalePct + "%";
+    if (lblM) lblM.textContent = malePct + "% (" + male + ")";
+    if (lblF) lblF.textContent = femalePct + "% (" + female + ")";
+
+    let child = 0, prod = 0, elder = 0;
+    citizens.forEach(c => {
+        if (c.age <= 14) child++;
+        else if (c.age <= 64) prod++;
+        else elder++;
+    });
+
+    const pct = n => total > 0 ? Math.round(n/total*100) : 0;
+    const setAge = (valId, barId, count) => {
+        const p = pct(count);
+        const v = document.getElementById(valId); if(v) v.textContent = p+"% ("+count+" jiwa)";
+        const b = document.getElementById(barId); if(b) b.style.width = p+"%";
+    };
+    setAge("age-val-child", "age-bar-child", child);
+    setAge("age-val-productive", "age-bar-productive", prod);
+    setAge("age-val-elderly", "age-bar-elderly", elder);
+}
+
+// ==================== BLOG PUBLIK ====================
 function renderPublicBlogs() {
     const grid = document.getElementById("public-blog-grid");
     if (!grid) return;
-
     grid.innerHTML = "";
-    blogs.forEach(blog => {
+    defaultBlogs.forEach(blog => {
         const card = document.createElement("div");
         card.className = "blog-card";
-        
         card.innerHTML = `
             <div class="blog-media">
                 <span class="blog-tag">${blog.category}</span>
@@ -276,71 +199,50 @@ function renderPublicBlogs() {
                 <span class="blog-date"><i class="fa-solid fa-calendar-days"></i> ${blog.date}</span>
                 <h3 class="blog-title">${blog.title}</h3>
                 <p class="blog-summary">${blog.summary}</p>
-            </div>
-        `;
+            </div>`;
         grid.appendChild(card);
     });
 }
 
-
-// ==================== PUBLIC PAGE: UMKM KATAOLOG ====================
-let selectedCategory = "All";
-let searchKeyword = "";
-
-function getCategoryPlaceholder(category, name) {
-    let iconClass = "fa-utensils";
-    let gradient = "linear-gradient(135deg, #f97316, #ea580c)"; // Orange Kuliner
-    
-    if (category === "Kerajinan") {
-        iconClass = "fa-palette";
-        gradient = "linear-gradient(135deg, #a855f7, #9333ea)";
-    } else if (category === "Pertanian") {
-        iconClass = "fa-seedling";
-        gradient = "linear-gradient(135deg, #10b981, #059669)";
-    } else if (category === "Jasa") {
-        iconClass = "fa-screwdriver-wrench";
-        gradient = "linear-gradient(135deg, #3b82f6, #2563eb)";
-    }
-
-    return `
-        <div class="umkm-image-fallback" style="background: ${gradient};">
-            <span class="umkm-image-fallback-icon"><i class="fa-solid ${iconClass}"></i></span>
-            <span class="umkm-image-fallback-text">${category}</span>
-        </div>
-    `;
+// ==================== UMKM PUBLIK ====================
+function getCategoryPlaceholder(category) {
+    const map = {
+        "Kuliner": { icon: "fa-utensils", bg: "linear-gradient(135deg,#f97316,#ea580c)" },
+        "Kerajinan": { icon: "fa-palette", bg: "linear-gradient(135deg,#a855f7,#9333ea)" },
+        "Pertanian": { icon: "fa-seedling", bg: "linear-gradient(135deg,#10b981,#059669)" },
+        "Jasa": { icon: "fa-screwdriver-wrench", bg: "linear-gradient(135deg,#3b82f6,#2563eb)" }
+    };
+    const c = map[category] || map["Kuliner"];
+    return `<div class="umkm-image-fallback" style="background:${c.bg};">
+        <span class="umkm-image-fallback-icon"><i class="fa-solid ${c.icon}"></i></span>
+        <span class="umkm-image-fallback-text">${category}</span>
+    </div>`;
 }
 
 function renderPublicUmkms() {
     const grid = document.getElementById("public-umkm-grid");
     if (!grid) return;
-
-    grid.innerHTML = "";
-    
-    const filteredUmkms = umkms.filter(u => {
-        const matchesCategory = (selectedCategory === "All" || u.category === selectedCategory);
-        const matchesSearch = u.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-                              u.owner.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-                              u.description.toLowerCase().includes(searchKeyword.toLowerCase());
-        return matchesCategory && matchesSearch;
+    const filtered = umkms.filter(u => {
+        const catOk = selectedCategory === "All" || u.category === selectedCategory;
+        const kw = searchKeyword.toLowerCase();
+        const searchOk = !kw || u.name.toLowerCase().includes(kw) || u.owner.toLowerCase().includes(kw) || u.description.toLowerCase().includes(kw);
+        return catOk && searchOk;
     });
 
-    if (filteredUmkms.length === 0) {
-        grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 60px 0; color: var(--text-secondary);">
-                <i class="fa-solid fa-store-slash fa-3x" style="margin-bottom: 16px; opacity: 0.3;"></i>
-                <p>Tidak ditemukan UMKM yang sesuai dengan pencarian.</p>
-            </div>
-        `;
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--text-secondary);">
+            <i class="fa-solid fa-store-slash fa-3x" style="opacity:0.3;margin-bottom:16px;display:block;"></i>
+            <p>Tidak ditemukan UMKM yang sesuai.</p></div>`;
         return;
     }
 
-    filteredUmkms.forEach(u => {
+    grid.innerHTML = "";
+    filtered.forEach(u => {
         const card = document.createElement("div");
         card.className = "umkm-card";
-        
         card.innerHTML = `
             <div class="umkm-image">
-                ${getCategoryPlaceholder(u.category, u.name)}
+                ${getCategoryPlaceholder(u.category)}
                 <span class="umkm-badge">${u.category}</span>
             </div>
             <div class="umkm-content">
@@ -350,44 +252,27 @@ function renderPublicUmkms() {
                 <a href="https://wa.me/${u.whatsapp}" target="_blank" class="btn-contact">
                     <i class="fa-brands fa-whatsapp"></i> Hubungi WhatsApp
                 </a>
-            </div>
-        `;
+            </div>`;
         grid.appendChild(card);
     });
 }
 
-document.querySelectorAll("#umkm-filter-group .filter-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        document.querySelectorAll("#umkm-filter-group .filter-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedCategory = btn.getAttribute("data-category");
-        renderPublicUmkms();
-    });
-});
-
-document.getElementById("search-umkm").addEventListener("input", (e) => {
-    searchKeyword = e.target.value;
-    renderPublicUmkms();
-});
-
-
-// ==================== AUTHENTICATION CONTROLLER ====================
+// ==================== AUTH ====================
 function handleLogin(event) {
     event.preventDefault();
-    const userField = document.getElementById("username").value;
-    const passField = document.getElementById("password").value;
-    const errorBox = document.getElementById("login-error-msg");
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+    const err  = document.getElementById("login-error-msg");
 
-    if (userField === "admin" && passField === "admin123") {
+    if (user === "admin" && pass === "admin123") {
         currentUser = "admin";
         sessionStorage.setItem("desanegentak_auth_token", "logged_in");
-        errorBox.style.display = "none";
+        if (err) err.style.display = "none";
         document.getElementById("login-form").reset();
-        
         showToast("Login berhasil! Selamat datang Pak Dukuh.", "success");
         switchView("admin-dashboard");
     } else {
-        errorBox.style.display = "block";
+        if (err) err.style.display = "block";
         showToast("Login gagal! Periksa username & password.", "danger");
     }
 }
@@ -399,381 +284,259 @@ function handleLogout() {
     switchView("public-home");
 }
 
-
-// ==================== ADMIN TAB CONTROL ====================
+// ==================== ADMIN TABS ====================
 function switchAdminTab(tabName) {
-    document.querySelectorAll(".sidebar-btn").forEach(btn => btn.classList.remove("active"));
-    document.querySelectorAll(".admin-tab-content").forEach(content => content.classList.remove("active"));
-    
-    if (tabName === "overview") {
-        document.getElementById("tab-btn-overview").classList.add("active");
-        document.getElementById("admin-tab-overview").classList.add("active");
-        updateAdminOverview();
-    } else if (tabName === "citizens") {
-        document.getElementById("tab-btn-citizens").classList.add("active");
-        document.getElementById("admin-tab-citizens").classList.add("active");
-        renderCitizenTable();
-    } else if (tabName === "umkm") {
-        document.getElementById("tab-btn-umkm").classList.add("active");
-        document.getElementById("admin-tab-umkm").classList.add("active");
-        renderAdminUmkmTable();
-    }
+    document.querySelectorAll(".sidebar-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".admin-tab-content").forEach(c => c.classList.remove("active"));
+    const btn = document.getElementById("tab-btn-" + tabName);
+    const tab = document.getElementById("admin-tab-" + tabName);
+    if (btn) btn.classList.add("active");
+    if (tab) tab.classList.add("active");
+    if (tabName === "overview") updateAdminOverview();
+    if (tabName === "citizens") renderCitizenTable();
+    if (tabName === "umkm") renderAdminUmkmTable();
 }
 
 function updateAdminOverview() {
-    const totalPop = citizens.length;
-    const maleCount = citizens.filter(c => c.gender === "Laki-Laki").length;
-    const femaleCount = citizens.filter(c => c.gender === "Perempuan").length;
-    const activeUmkms = umkms.length;
-
-    document.getElementById("admin-summary-pop").textContent = totalPop;
-    document.getElementById("admin-summary-male").textContent = maleCount;
-    document.getElementById("admin-summary-female").textContent = femaleCount;
-    document.getElementById("admin-summary-umkm").textContent = activeUmkms;
+    const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    const male = citizens.filter(c => c.gender === "Laki-Laki").length;
+    set("admin-summary-pop", citizens.length);
+    set("admin-summary-male", male);
+    set("admin-summary-female", citizens.length - male);
+    set("admin-summary-umkm", umkms.length);
 }
 
-
-// ==================== ADMIN: CITIZENS CRUD OPERATIONS ====================
-let citizenAdminSearch = "";
-
+// ==================== WARGA CRUD ====================
 function renderCitizenTable() {
     const tbody = document.getElementById("citizen-table-body");
     if (!tbody) return;
-
-    tbody.innerHTML = "";
-    
-    const rtFilter = document.getElementById("filter-rt-admin").value;
+    const rtFilter = document.getElementById("filter-rt-admin");
+    const rt = rtFilter ? rtFilter.value : "All";
+    const kw = citizenAdminSearch.toLowerCase();
 
     const filtered = citizens.filter(c => {
-        const matchesRT = (rtFilter === "All" || c.rt === rtFilter);
-        const matchesSearch = c.nik.includes(citizenAdminSearch) ||
-                              c.name.toLowerCase().includes(citizenAdminSearch.toLowerCase()) ||
-                              c.job.toLowerCase().includes(citizenAdminSearch.toLowerCase());
-        return matchesRT && matchesSearch;
+        const rtOk = (rt === "All" || c.rt === rt);
+        const search = !kw || c.nik.includes(kw) || c.name.toLowerCase().includes(kw) || c.job.toLowerCase().includes(kw);
+        return rtOk && search;
     });
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                    <i class="fa-solid fa-folder-open fa-2x" style="margin-bottom: 12px; opacity: 0.3;"></i>
-                    <p>Tidak ada data warga terdaftar.</p>
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-secondary);">
+            <i class="fa-solid fa-folder-open fa-2x" style="opacity:0.3;margin-bottom:12px;display:block;"></i>
+            <p>Tidak ada data warga terdaftar.</p></td></tr>`;
         return;
     }
 
+    tbody.innerHTML = "";
     filtered.forEach(c => {
         const tr = document.createElement("tr");
-        const genderBadge = c.gender === "Laki-Laki" ? 
-            `<span class="tag-badge male">Laki-Laki</span>` : 
+        const gBadge = c.gender === "Laki-Laki" ?
+            `<span class="tag-badge male">Laki-Laki</span>` :
             `<span class="tag-badge female">Perempuan</span>`;
-
-        const photoColumn = c.house_photo_url ?
-            `<td><img src="${c.house_photo_url}" style="width: 45px; height: 45px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-color); cursor: zoom-in;" onclick="viewFullImage('${c.house_photo_url}', '${c.name}')" title="Perbesar"></td>` :
-            `<td><span style="color: var(--text-muted); font-size: 0.75rem;"><i class="fa-solid fa-image-slash"></i> Kosong</span></td>`;
-
+        const photo = c.house_photo_url ?
+            `<td><img src="${c.house_photo_url}" style="width:45px;height:45px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border-color);cursor:zoom-in;" onclick="viewFullImage('${c.house_photo_url}','${c.name}')" title="Perbesar"></td>` :
+            `<td><span style="color:var(--text-muted);font-size:0.75rem;"><i class="fa-solid fa-image-slash"></i> Kosong</span></td>`;
         tr.innerHTML = `
             <td><span class="nik-badge">${c.nik}</span></td>
             <td><strong>${c.name}</strong></td>
-            <td>${genderBadge}</td>
+            <td>${gBadge}</td>
             <td>${c.age} Tahun</td>
             <td>${c.rt}</td>
             <td>${c.job}</td>
-            ${photoColumn}
-            <td>
-                <div class="actions-cell">
-                    <button class="btn-icon edit" onclick="openCitizenModal(true, '${c.id}')" title="Edit Biodata"><i class="fa-solid fa-pencil"></i></button>
-                    <button class="btn-icon delete" onclick="deleteCitizen('${c.id}')" title="Hapus Warga"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            </td>
-        `;
+            ${photo}
+            <td><div class="actions-cell">
+                <button class="btn-icon edit" onclick="openCitizenModal(true,'${c.id}')" title="Edit"><i class="fa-solid fa-pencil"></i></button>
+                <button class="btn-icon delete" onclick="deleteCitizen('${c.id}')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+            </div></td>`;
         tbody.appendChild(tr);
     });
 }
 
-document.getElementById("search-citizen-admin").addEventListener("input", (e) => {
-    citizenAdminSearch = e.target.value;
-    renderCitizenTable();
-});
-
-// Full size image viewer helper
 function viewFullImage(url, title) {
-    // Open in a new styled tab
-    const imageWin = window.open("", "_blank");
-    imageWin.document.write(`
-        <html>
-        <head>
-            <title>Foto Rumah - ${title}</title>
-            <style>
-                body {
-                    margin: 0; background-color: #0b0f19; display: flex; 
-                    align-items: center; justify-content: center; height: 100vh;
-                    font-family: sans-serif; color: #fff;
-                }
-                img {
-                    max-width: 90%; max-height: 90vh; border-radius: 12px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);
-                }
-            </style>
-        </head>
-        <body>
-            <img src="${url}">
-        </body>
-        </html>
-    `);
-    imageWin.document.close();
+    const w = window.open("","_blank");
+    if (!w) return;
+    w.document.write(`<html><head><title>Foto - ${title}</title>
+    <style>body{margin:0;background:#0b0f19;display:flex;align-items:center;justify-content:center;height:100vh;}
+    img{max-width:90%;max-height:90vh;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.8);}</style>
+    </head><body><img src="${url}"></body></html>`);
+    w.document.close();
 }
 
-// Modal Actions
-function openCitizenModal(isEdit = false, citizenId = "") {
+function openCitizenModal(isEdit, citizenId) {
     const modal = document.getElementById("citizen-modal");
-    const form = document.getElementById("citizen-form");
+    const form  = document.getElementById("citizen-form");
     const title = document.getElementById("citizen-modal-title");
-    const submitBtn = document.getElementById("citizen-btn-submit");
-
+    const btn   = document.getElementById("citizen-btn-submit");
+    if (!modal) return;
     form.reset();
-    document.getElementById("citizen-photo").value = ""; // reset photo file
-    
-    if (isEdit) {
+    const photoInput = document.getElementById("citizen-photo");
+    if (photoInput) photoInput.value = "";
+
+    if (isEdit && citizenId) {
         title.textContent = "Ubah Biodata Warga";
-        submitBtn.textContent = "Simpan Perubahan";
-        
-        const citizen = citizens.find(c => c.id === citizenId);
-        if (citizen) {
-            document.getElementById("edit-citizen-id").value = citizen.id;
-            document.getElementById("citizen-nik").value = citizen.nik;
-            document.getElementById("citizen-name").value = citizen.name;
-            document.getElementById("citizen-gender").value = citizen.gender;
-            document.getElementById("citizen-age").value = citizen.age;
-            document.getElementById("citizen-rt").value = citizen.rt;
-            document.getElementById("citizen-job").value = citizen.job;
+        btn.textContent = "Simpan Perubahan";
+        const c = citizens.find(x => x.id == citizenId);
+        if (c) {
+            document.getElementById("edit-citizen-id").value = c.id;
+            document.getElementById("citizen-nik").value = c.nik;
+            document.getElementById("citizen-name").value = c.name;
+            document.getElementById("citizen-gender").value = c.gender;
+            document.getElementById("citizen-age").value = c.age;
+            document.getElementById("citizen-rt").value = c.rt;
+            document.getElementById("citizen-job").value = c.job;
         }
     } else {
         title.textContent = "Tambah Data Warga";
-        submitBtn.textContent = "Simpan Warga";
+        btn.textContent = "Simpan Warga";
         document.getElementById("edit-citizen-id").value = "";
     }
-
     modal.classList.add("active");
 }
 
 function closeCitizenModal() {
-    document.getElementById("citizen-modal").classList.remove("active");
+    const m = document.getElementById("citizen-modal");
+    if (m) m.classList.remove("active");
 }
 
-// Upload file to Supabase Storage
 async function uploadHousePhoto(file) {
-    if (!file) return null;
-    
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-    const filePath = `${fileName}`;
-
+    if (!file || !supabase) return null;
+    const ext  = file.name.split('.').pop();
+    const path = Date.now() + "_" + Math.random().toString(36).slice(2) + "." + ext;
     try {
-        const { data, error } = await supabase.storage
-            .from('house-photos')
-            .upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: false
-            });
-
+        const { error } = await supabase.storage.from('house-photos').upload(path, file, { cacheControl:'3600', upsert:false });
         if (error) throw error;
-
-        // Get public URL
-        const { data: urlData } = supabase.storage
-            .from('house-photos')
-            .getPublicUrl(filePath);
-
-        return urlData.publicUrl;
-    } catch (err) {
-        console.error("Gagal upload gambar ke Supabase Storage:", err);
-        showToast("Unggah foto rumah gagal: " + err.message, "danger");
+        const { data } = supabase.storage.from('house-photos').getPublicUrl(path);
+        return data.publicUrl;
+    } catch(e) {
+        showToast("Upload foto gagal: " + e.message, "danger");
         return null;
     }
 }
 
 async function saveCitizen(event) {
     event.preventDefault();
-    
-    // Toggle loader state in UI (submit button)
-    const submitBtn = document.getElementById("citizen-btn-submit");
-    const originalBtnText = submitBtn.textContent;
-    submitBtn.textContent = "Menyimpan...";
-    submitBtn.disabled = true;
+    const btn = document.getElementById("citizen-btn-submit");
+    const origText = btn.textContent;
+    btn.textContent = "Menyimpan...";
+    btn.disabled = true;
 
     try {
-        const id = document.getElementById("edit-citizen-id").value;
-        const nik = document.getElementById("citizen-nik").value;
-        const name = document.getElementById("citizen-name").value;
+        const id     = document.getElementById("edit-citizen-id").value;
+        const nik    = document.getElementById("citizen-nik").value.trim();
+        const name   = document.getElementById("citizen-name").value.trim();
         const gender = document.getElementById("citizen-gender").value;
-        const age = parseInt(document.getElementById("citizen-age").value);
-        const rt = document.getElementById("citizen-rt").value;
-        const job = document.getElementById("citizen-job").value;
-        
+        const age    = parseInt(document.getElementById("citizen-age").value);
+        const rt     = document.getElementById("citizen-rt").value;
+        const job    = document.getElementById("citizen-job").value.trim();
         const photoInput = document.getElementById("citizen-photo");
-        const photoFile = photoInput.files[0];
+        const photoFile  = photoInput && photoInput.files[0];
 
-        // Format NIK check
         if (nik.length !== 16 || !/^\d+$/.test(nik)) {
-            showToast("Format NIK harus berupa 16 digit angka saja!", "danger");
-            submitBtn.textContent = originalBtnText;
-            submitBtn.disabled = false;
+            showToast("NIK harus 16 digit angka!", "danger");
             return;
         }
+        const dupNIK = citizens.find(c => c.nik === nik && c.id != id);
+        if (dupNIK) { showToast("NIK sudah terdaftar atas nama " + dupNIK.name + "!", "danger"); return; }
 
-        // Verify NIK uniqueness (client-side sanity check)
-        const existingNIK = citizens.find(c => c.nik === nik && c.id !== id);
-        if (existingNIK) {
-            showToast(`NIK ${nik} sudah terdaftar atas nama ${existingNIK.name}!`, "danger");
-            submitBtn.textContent = originalBtnText;
-            submitBtn.disabled = false;
-            return;
-        }
+        let photoUrl = null;
+        if (photoFile) photoUrl = await uploadHousePhoto(photoFile);
 
-        // Handle Image upload if a file was selected
-        let housePhotoUrl = null;
-        if (photoFile) {
-            housePhotoUrl = await uploadHousePhoto(photoFile);
-        }
-
-        if (id) {
-            // EDIT FLOW
-            const existingCitizen = citizens.find(c => c.id === id);
-            const finalPhotoUrl = housePhotoUrl || (existingCitizen ? existingCitizen.house_photo_url : null);
-
-            const { error } = await supabase
-                .from('citizens')
-                .update({ 
-                    nik, 
-                    name, 
-                    gender, 
-                    age, 
-                    rt, 
-                    job, 
-                    house_photo_url: finalPhotoUrl 
-                })
-                .eq('id', id);
-
+        if (!supabase) {
+            // Offline fallback (update local state)
+            if (id) {
+                const idx = citizens.findIndex(c => c.id == id);
+                if (idx > -1) citizens[idx] = { ...citizens[idx], nik, name, gender, age, rt, job, house_photo_url: photoUrl || citizens[idx].house_photo_url };
+            } else {
+                citizens.push({ id: Date.now().toString(), nik, name, gender, age, rt, job, house_photo_url: photoUrl });
+            }
+            showToast("Data disimpan (mode offline).", "success");
+        } else if (id) {
+            const existing = citizens.find(c => c.id == id);
+            const finalPhoto = photoUrl || (existing ? existing.house_photo_url : null);
+            const { error } = await supabase.from('citizens').update({ nik, name, gender, age, rt, job, house_photo_url: finalPhoto }).eq('id', id);
             if (error) throw error;
-            showToast(`Data ${name} berhasil diperbarui di Supabase.`, "success");
+            showToast("Data " + name + " berhasil diperbarui.", "success");
+            const { data } = await supabase.from('citizens').select('*').order('created_at', { ascending: true });
+            citizens = data || [];
         } else {
-            // INSERT FLOW
-            const { error } = await supabase
-                .from('citizens')
-                .insert([{ 
-                    nik, 
-                    name, 
-                    gender, 
-                    age, 
-                    rt, 
-                    job, 
-                    house_photo_url: housePhotoUrl 
-                }]);
-
+            const { error } = await supabase.from('citizens').insert([{ nik, name, gender, age, rt, job, house_photo_url: photoUrl }]);
             if (error) throw error;
-            showToast(`Warga baru ${name} berhasil ditambahkan ke Supabase.`, "success");
+            showToast("Warga " + name + " berhasil ditambahkan.", "success");
+            const { data } = await supabase.from('citizens').select('*').order('created_at', { ascending: true });
+            citizens = data || [];
         }
-
-        // Re-fetch database state to update local array
-        let { data: updatedCitizens } = await supabase.from('citizens').select('*').order('created_at', { ascending: true });
-        citizens = updatedCitizens || [];
 
         closeCitizenModal();
         renderCitizenTable();
         calculateStatistics();
         updateAdminOverview();
-    } catch (err) {
-        console.error("Gagal menyimpan data warga:", err);
-        showToast("Gagal menyimpan: " + err.message, "danger");
+    } catch(e) {
+        console.error(e);
+        showToast("Gagal menyimpan: " + e.message, "danger");
     } finally {
-        submitBtn.textContent = originalBtnText;
-        submitBtn.disabled = false;
+        btn.textContent = origText;
+        btn.disabled = false;
     }
 }
 
 async function deleteCitizen(citizenId) {
-    const citizen = citizens.find(c => c.id === citizenId);
-    if (!citizen) return;
-
-    if (confirm(`Apakah Anda yakin ingin menghapus data warga: ${citizen.name} (NIK: ${citizen.nik})?`)) {
-        try {
-            const { error } = await supabase
-                .from('citizens')
-                .delete()
-                .eq('id', citizenId);
-
+    const c = citizens.find(x => x.id == citizenId);
+    if (!c) return;
+    if (!confirm("Hapus data warga " + c.name + " (NIK: " + c.nik + ")?")) return;
+    try {
+        if (supabase) {
+            const { error } = await supabase.from('citizens').delete().eq('id', citizenId);
             if (error) throw error;
-
-            showToast(`Data warga ${citizen.name} telah dihapus dari database.`, "success");
-            
-            // Sync local array
-            citizens = citizens.filter(c => c.id !== citizenId);
-            
-            renderCitizenTable();
-            calculateStatistics();
-            updateAdminOverview();
-        } catch (err) {
-            console.error("Gagal menghapus data warga:", err);
-            showToast("Gagal menghapus: " + err.message, "danger");
         }
+        citizens = citizens.filter(x => x.id != citizenId);
+        showToast("Data " + c.name + " telah dihapus.", "success");
+        renderCitizenTable();
+        calculateStatistics();
+        updateAdminOverview();
+    } catch(e) {
+        showToast("Gagal menghapus: " + e.message, "danger");
     }
 }
 
-
-// ==================== ADMIN: UMKM CRUD OPERATIONS ====================
+// ==================== UMKM CRUD ====================
 function renderAdminUmkmTable() {
     const tbody = document.getElementById("umkm-table-body");
     if (!tbody) return;
-
-    tbody.innerHTML = "";
-
     if (umkms.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                    <i class="fa-solid fa-store-slash fa-2x" style="margin-bottom: 12px; opacity: 0.3;"></i>
-                    <p>Tidak ada UMKM terdaftar.</p>
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">
+            <i class="fa-solid fa-store-slash fa-2x" style="opacity:0.3;display:block;margin-bottom:12px;"></i>
+            <p>Tidak ada UMKM terdaftar.</p></td></tr>`;
         return;
     }
-
+    tbody.innerHTML = "";
     umkms.forEach(u => {
         const tr = document.createElement("tr");
-
         tr.innerHTML = `
             <td><strong>${u.name}</strong></td>
             <td>${u.owner}</td>
-            <td><span class="tag-badge male" style="background-color: var(--primary-glow); color: var(--primary-light);">${u.category}</span></td>
-            <td><a href="https://wa.me/${u.whatsapp}" target="_blank" style="color: #25d366; text-decoration:none; font-weight:600;"><i class="fa-brands fa-whatsapp"></i> +${u.whatsapp}</a></td>
-            <td style="max-width: 240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.description}</td>
-            <td>
-                <div class="actions-cell">
-                    <button class="btn-icon edit" onclick="openUmkmModal(true, '${u.id}')" title="Edit Profil Usaha"><i class="fa-solid fa-pencil"></i></button>
-                    <button class="btn-icon delete" onclick="deleteUmkm('${u.id}')" title="Hapus UMKM"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            </td>
-        `;
+            <td><span class="tag-badge male" style="background-color:var(--primary-glow);color:var(--primary-light);">${u.category}</span></td>
+            <td><a href="https://wa.me/${u.whatsapp}" target="_blank" style="color:#25d366;font-weight:600;text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> +${u.whatsapp}</a></td>
+            <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.description}</td>
+            <td><div class="actions-cell">
+                <button class="btn-icon edit" onclick="openUmkmModal(true,'${u.id}')" title="Edit"><i class="fa-solid fa-pencil"></i></button>
+                <button class="btn-icon delete" onclick="deleteUmkm('${u.id}')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+            </div></td>`;
         tbody.appendChild(tr);
     });
 }
 
-function openUmkmModal(isEdit = false, umkmId = "") {
+function openUmkmModal(isEdit, umkmId) {
     const modal = document.getElementById("umkm-modal");
-    const form = document.getElementById("umkm-form");
+    const form  = document.getElementById("umkm-form");
     const title = document.getElementById("umkm-modal-title");
-    const submitBtn = document.getElementById("umkm-btn-submit");
-
+    const btn   = document.getElementById("umkm-btn-submit");
+    if (!modal) return;
     form.reset();
 
-    if (isEdit) {
+    if (isEdit && umkmId) {
         title.textContent = "Ubah Data UMKM";
-        submitBtn.textContent = "Simpan Perubahan";
-        
-        const u = umkms.find(item => item.id === umkmId);
+        btn.textContent = "Simpan Perubahan";
+        const u = umkms.find(x => x.id == umkmId);
         if (u) {
             document.getElementById("edit-umkm-id").value = u.id;
             document.getElementById("umkm-name").value = u.name;
@@ -784,195 +547,189 @@ function openUmkmModal(isEdit = false, umkmId = "") {
         }
     } else {
         title.textContent = "Tambah Usaha UMKM Baru";
-        submitBtn.textContent = "Simpan Promosi";
+        btn.textContent = "Simpan Promosi";
         document.getElementById("edit-umkm-id").value = "";
     }
-
     modal.classList.add("active");
 }
 
 function closeUmkmModal() {
-    document.getElementById("umkm-modal").classList.remove("active");
+    const m = document.getElementById("umkm-modal");
+    if (m) m.classList.remove("active");
 }
 
 async function saveUmkm(event) {
     event.preventDefault();
-    
-    const submitBtn = document.getElementById("umkm-btn-submit");
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = "Menyimpan...";
-    submitBtn.disabled = true;
+    const btn = document.getElementById("umkm-btn-submit");
+    const origText = btn.textContent;
+    btn.textContent = "Menyimpan...";
+    btn.disabled = true;
 
     try {
-        const id = document.getElementById("edit-umkm-id").value;
-        const name = document.getElementById("umkm-name").value;
-        const owner = document.getElementById("umkm-owner").value;
-        const category = document.getElementById("umkm-category").value;
-        let whatsapp = document.getElementById("umkm-whatsapp").value.replace(/\D/g, ''); // Numbers only
-        const description = document.getElementById("umkm-description").value;
+        const id          = document.getElementById("edit-umkm-id").value;
+        const name        = document.getElementById("umkm-name").value.trim();
+        const owner       = document.getElementById("umkm-owner").value.trim();
+        const category    = document.getElementById("umkm-category").value;
+        const whatsapp    = document.getElementById("umkm-whatsapp").value.replace(/\D/g,'');
+        const description = document.getElementById("umkm-description").value.trim();
 
-        if (!whatsapp.startsWith("62")) {
-            showToast("Nomor WhatsApp harus diawali kode negara 62!", "danger");
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-            return;
-        }
+        if (!whatsapp.startsWith("62")) { showToast("Nomor WA harus diawali 62!", "danger"); return; }
 
-        if (id) {
-            // EDIT FLOW
-            const { error } = await supabase
-                .from('umkms')
-                .update({ name, owner, category, whatsapp, description })
-                .eq('id', id);
-
+        if (!supabase) {
+            if (id) {
+                const idx = umkms.findIndex(x => x.id == id);
+                if (idx > -1) umkms[idx] = { ...umkms[idx], name, owner, category, whatsapp, description };
+            } else {
+                umkms.push({ id: Date.now().toString(), name, owner, category, whatsapp, description });
+            }
+            showToast("UMKM disimpan (mode offline).", "success");
+        } else if (id) {
+            const { error } = await supabase.from('umkms').update({ name, owner, category, whatsapp, description }).eq('id', id);
             if (error) throw error;
-            showToast(`UMKM "${name}" berhasil diubah.`, "success");
+            showToast("UMKM \"" + name + "\" diperbarui.", "success");
+            const { data } = await supabase.from('umkms').select('*').order('created_at', { ascending: true });
+            umkms = data || [];
         } else {
-            // INSERT FLOW
-            const { error } = await supabase
-                .from('umkms')
-                .insert([{ name, owner, category, whatsapp, description }]);
-
+            const { error } = await supabase.from('umkms').insert([{ name, owner, category, whatsapp, description }]);
             if (error) throw error;
-            showToast(`UMKM "${name}" berhasil didaftarkan ke Supabase.`, "success");
+            showToast("UMKM \"" + name + "\" didaftarkan.", "success");
+            const { data } = await supabase.from('umkms').select('*').order('created_at', { ascending: true });
+            umkms = data || [];
         }
-
-        // Re-fetch
-        let { data: updatedUmkms } = await supabase.from('umkms').select('*').order('created_at', { ascending: true });
-        umkms = updatedUmkms || [];
 
         closeUmkmModal();
         renderAdminUmkmTable();
         renderPublicUmkms();
         calculateStatistics();
         updateAdminOverview();
-    } catch (err) {
-        console.error("Gagal menyimpan UMKM:", err);
-        showToast("Gagal menyimpan: " + err.message, "danger");
+    } catch(e) {
+        showToast("Gagal menyimpan: " + e.message, "danger");
     } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        btn.textContent = origText;
+        btn.disabled = false;
     }
 }
 
 async function deleteUmkm(umkmId) {
-    const u = umkms.find(item => item.id === umkmId);
+    const u = umkms.find(x => x.id == umkmId);
     if (!u) return;
-
-    if (confirm(`Apakah Anda yakin ingin menghapus promosi UMKM: ${u.name}?`)) {
-        try {
-            const { error } = await supabase
-                .from('umkms')
-                .delete()
-                .eq('id', umkmId);
-
+    if (!confirm("Hapus UMKM: " + u.name + "?")) return;
+    try {
+        if (supabase) {
+            const { error } = await supabase.from('umkms').delete().eq('id', umkmId);
             if (error) throw error;
-
-            showToast(`Promosi UMKM "${u.name}" telah dihapus.`, "success");
-            
-            // Sync
-            umkms = umkms.filter(item => item.id !== umkmId);
-            
-            renderAdminUmkmTable();
-            renderPublicUmkms();
-            calculateStatistics();
-            updateAdminOverview();
-        } catch (err) {
-            console.error("Gagal menghapus UMKM:", err);
-            showToast("Gagal menghapus: " + err.message, "danger");
         }
+        umkms = umkms.filter(x => x.id != umkmId);
+        showToast("UMKM \"" + u.name + "\" dihapus.", "success");
+        renderAdminUmkmTable();
+        renderPublicUmkms();
+        calculateStatistics();
+        updateAdminOverview();
+    } catch(e) {
+        showToast("Gagal menghapus: " + e.message, "danger");
     }
 }
 
-
-// ==================== EXPORT DATA (CSV & JSON) ====================
+// ==================== EKSPOR ====================
 function exportToCSV() {
-    if (citizens.length === 0) {
-        showToast("Database kosong, tidak ada data untuk diekspor.", "danger");
-        return;
-    }
-
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "ID,NIK,Nama,Jenis Kelamin,Usia,Wilayah RT,Pekerjaan Utama,URL Foto Rumah\n";
-
+    if (!citizens.length) { showToast("Database kosong.", "danger"); return; }
+    let csv = "ID,NIK,Nama,Jenis Kelamin,Usia,RT,Pekerjaan,Foto Rumah\n";
     citizens.forEach(c => {
-        const row = [
-            c.id,
-            `'${c.nik}'`, // Add quote to prevent Excel exponential truncation
-            `"${c.name}"`,
-            c.gender,
-            c.age,
-            c.rt,
-            `"${c.job}"`,
-            c.house_photo_url ? `"${c.house_photo_url}"` : '""'
-        ].join(",");
-        csvContent += row + "\n";
+        csv += [c.id, "'"+c.nik, '"'+c.name+'"', c.gender, c.age, c.rt, '"'+c.job+'"', c.house_photo_url||""].join(",") + "\n";
     });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `database_kependudukan_ngentak_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast("Database kependudukan sukses diekspor ke CSV.", "success");
+    const a = document.createElement("a");
+    a.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
+    a.download = "kependudukan_ngentak_" + Date.now() + ".csv";
+    a.click();
+    showToast("Ekspor CSV berhasil.", "success");
 }
 
 function exportToJSON() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(citizens, null, 2));
-    const link = document.createElement("a");
-    link.setAttribute("href", dataStr);
-    link.setAttribute("download", `database_kependudukan_ngentak_${Date.now()}.json`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast("Database kependudukan sukses diekspor ke JSON.", "success");
+    const a = document.createElement("a");
+    a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(citizens, null, 2));
+    a.download = "kependudukan_ngentak_" + Date.now() + ".json";
+    a.click();
+    showToast("Ekspor JSON berhasil.", "success");
 }
 
-
-// ==================== TOAST MESSAGES ====================
-function showToast(message, type = "success") {
+// ==================== TOAST ====================
+function showToast(message, type) {
+    type = type || "success";
     const container = document.getElementById("toast-wrapper");
     if (!container) return;
-
     const toast = document.createElement("div");
-    toast.className = `toast ${type}`;
-    
-    const icon = type === "success" ? 
-        '<i class="fa-solid fa-circle-check" style="color: var(--success);"></i>' : 
-        '<i class="fa-solid fa-circle-exclamation" style="color: var(--danger);"></i>';
-
-    toast.innerHTML = `
-        ${icon}
-        <span>${message}</span>
-    `;
-
+    toast.className = "toast " + type;
+    const icon = type === "success" ?
+        '<i class="fa-solid fa-circle-check" style="color:var(--success);"></i>' :
+        '<i class="fa-solid fa-circle-exclamation" style="color:var(--danger);"></i>';
+    toast.innerHTML = icon + "<span>" + message + "</span>";
     container.appendChild(toast);
-    
     setTimeout(() => toast.classList.add("show"), 10);
-
-    setTimeout(() => {
-        toast.classList.remove("show");
-        setTimeout(() => toast.remove(), 300);
-    }, 3500);
+    setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
+// ==================== INISIALISASI UTAMA ====================
+// Semua event listener dipasang di sini agar DOM sudah siap
+window.addEventListener("DOMContentLoaded", function() {
 
-// ==================== INITIALIZATION ON LOAD ====================
-window.addEventListener("DOMContentLoaded", () => {
-    initDatabase();
-    
-    const currentHash = window.location.hash.substring(1);
-    if (currentHash === "umkm") {
-        switchView("umkm-directory");
-    } else if (currentHash === "admin") {
-        if (currentUser) {
-            switchView("admin-dashboard");
+    // 1. Inisialisasi Supabase setelah DOM siap
+    try {
+        if (window.supabase && window.supabase.createClient) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log("Supabase berhasil diinisialisasi.");
         } else {
-            switchView("admin-login");
+            console.warn("window.supabase tidak tersedia. Mode offline aktif.");
         }
-    } else {
-        switchView("public-home");
+    } catch(e) {
+        console.error("Error inisialisasi Supabase:", e);
     }
+
+    // 2. Pasang event listener navigasi
+    document.querySelectorAll(".nav-link, .btn-admin").forEach(function(el) {
+        el.addEventListener("click", function(e) {
+            e.preventDefault();
+            switchView(el.getAttribute("data-target"));
+        });
+    });
+
+    const logo = document.getElementById("nav-logo");
+    if (logo) logo.addEventListener("click", function(e) { e.preventDefault(); switchView("public-home"); });
+
+    // 3. Pasang event listener UMKM filter
+    document.querySelectorAll("#umkm-filter-group .filter-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+            document.querySelectorAll("#umkm-filter-group .filter-btn").forEach(function(b) { b.classList.remove("active"); });
+            btn.classList.add("active");
+            selectedCategory = btn.getAttribute("data-category");
+            renderPublicUmkms();
+        });
+    });
+
+    // 4. Pasang event listener pencarian UMKM
+    const searchUmkm = document.getElementById("search-umkm");
+    if (searchUmkm) searchUmkm.addEventListener("input", function(e) {
+        searchKeyword = e.target.value;
+        renderPublicUmkms();
+    });
+
+    // 5. Pasang event listener pencarian admin warga
+    const searchCitizen = document.getElementById("search-citizen-admin");
+    if (searchCitizen) searchCitizen.addEventListener("input", function(e) {
+        citizenAdminSearch = e.target.value;
+        renderCitizenTable();
+    });
+
+    // 6. Cek sesi login
+    if (sessionStorage.getItem("desanegentak_auth_token") === "logged_in") {
+        currentUser = "admin";
+    }
+
+    // 7. Muat database dari Supabase (async, tidak menghalangi navigasi)
+    initDatabase();
+
+    // 8. Tampilkan halaman awal
+    const hash = window.location.hash.substring(1);
+    if (hash === "umkm") switchView("umkm-directory");
+    else if (hash === "admin") switchView(currentUser ? "admin-dashboard" : "admin-login");
+    else switchView("public-home");
 });
